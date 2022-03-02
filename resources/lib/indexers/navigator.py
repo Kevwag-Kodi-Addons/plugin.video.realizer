@@ -19,7 +19,7 @@
 '''
 
 
-import os,sys, xbmcaddon
+import os,sys, xbmcaddon, xbmc
 
 try:
 	import urlparse

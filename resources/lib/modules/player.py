@@ -18,8 +18,9 @@
 '''
 
 
-import re,sys,json,time,xbmc, xbmcgui, xbmcplugin
+import re,sys,json,time,xbmc, xbmcgui, xbmcplugin, xbmcaddon
 import hashlib,urllib,os,zlib,base64,codecs
+import requests
 
 try:
     import xmlrpclib
@@ -54,8 +55,8 @@ class player(xbmc.Player):
 
 
     def run(self, title, year, season, episode, imdb, tvdb, url, meta, id, clearlogo):
-        try:
-        #if 1 ==1:
+        #try:
+        if 1 ==1:
             control.sleep(200)
             self.autoResume       = control.setting('bookmarks.autoresume')
             self.nextup_timeout   = control.setting('nextup.timeout')
@@ -87,13 +88,15 @@ class player(xbmc.Player):
                 infoMeta = True
                 
             else: 
-                self.content == 'episode'
+                self.content = 'episode'
                 self.filetype = 'episode'
                 infoMeta = True        
 #                infoMeta = False
 
-            
-        
+            tmdbhelper_clearlogo = xbmcgui.Window(10000).getProperty('tmdbhelper_clearlogo')
+            if tmdbhelper_clearlogo != '':
+                clearlogo = tmdbhelper_clearlogo
+                xbmcgui.Window(10000).clearProperty('tmdbhelper_clearlogo')
             self.tvshowtitle = title
             self.title = title
             self.year = year
@@ -213,19 +216,22 @@ class player(xbmc.Player):
             
             #control.player.play(url, item)
             #xbmc.Player().play(item=url, listitem=item)
+            xbmc.executebuiltin('Dialog.Close(busydialog)')
+            xbmc.executebuiltin('Dialog.Close(busydialognocancel)')
             playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
             playlist.clear()
-            playlist.add(url, item)
             xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
-            xbmcplugin.addDirectoryItem(int(sys.argv[1]),str(url),item, isFolder=False)
+            playlist.add(url, item)
+            handle = int(sys.argv[1])
+            xbmcplugin.addDirectoryItem(handle,str(url),item, isFolder=False)
             #tmdbhelper needs Resolved URL to be FALSE when PLAYER "is_resolvable" : "true"
             #PHIL===PHIL
             #xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
             xbmc.log(str(sys.argv)+'===>PHIL', level=xbmc.LOGINFO)
             xbmc.log(str(url)+'===>PHIL', level=xbmc.LOGINFO)
-            xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
+            xbmcplugin.setResolvedUrl(handle, True, item)
             #xbmcplugin.addDirectoryItem(handle=-1, url=PTN_download , listitem=li, isFolder=False)
-            xbmcplugin.endOfDirectory(-int(sys.argv[1]))
+            xbmcplugin.endOfDirectory(handle)
             #xbmc.Player().play(item=PTN_download, listitem=li)
             #xbmc.Player().play(item=url, listitem=li)
             xbmc.Player().play(playlist)
@@ -241,8 +247,8 @@ class player(xbmc.Player):
             #control.window.clearProperty('script.trakt.ids')
 
 
-        except:
-            return
+        #except:
+        #    return
 
 
     def getMeta(self, meta):

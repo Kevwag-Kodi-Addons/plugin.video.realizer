@@ -19,7 +19,11 @@
 '''
 
 
-import re,json,urlparse,time,urllib,sys,xbmc
+import re,json,time,urllib,sys,xbmc
+
+from urllib.parse import urlparse
+from urllib.parse import parse_qsl
+urlparse.parse_qsl = parse_qsl
 
 from resources.lib.modules import utils
 

@@ -3,7 +3,10 @@
 from resources.lib.modules import control
 from resources.lib.modules import client
 import requests
-import os,sys,re,json,urllib,urlparse,base64,datetime,time,json
+import os,sys,re,json,urllib,base64,datetime,time,json
+from urllib.parse import urlparse
+from urllib.parse import parse_qsl
+urlparse.parse_qsl = parse_qsl
 params = dict(urlparse.parse_qsl(sys.argv[2].replace('?','')))
 action = params.get('action')
 ftvAPI = control.setting('fanart.tv.project')

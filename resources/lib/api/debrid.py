@@ -83,7 +83,7 @@ def meta_folder(create_directory=True, content='all'):
 		try: name = name.split('/')[-1]
 		except: name = name
 		prog = (count * 100) / int(total)
-		if control.setting('metacloud.dialog') == 'true': progressDialog.update(prog,'This process will run just for items in your cloud not already in the database...', name) 
+		if control.setting('metacloud.dialog') == 'true': progressDialog.update(int(prog),'This process will run just for items in your cloud not already in the database...' + name) 
 
 		season = None
 		episode = None

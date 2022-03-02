@@ -22,7 +22,8 @@ import json
 
 from resources.lib.modules import control
 from resources.lib.api import trakt
-from metalibrary import playcountMeta
+from resources.lib import metalibrary
+from resources.lib.metalibrary import playcountMeta
 
 
 

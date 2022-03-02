@@ -1,7 +1,8 @@
 from bs4 import BeautifulSoup
 import requests
 import datetime
-import feedparser
+from resources.lib import feedparser
+
 import sys
 import os
 import urllib

@@ -13,7 +13,15 @@ from resources.lib.modules import bookmarks
 
 from resources.lib.api import tvdbapi
 import libThread
-import os,sys,re,json,zipfile,StringIO,urllib,urllib2,urlparse,datetime,json,time
+import os,sys,re,json,zipfile,urllib,datetime,json,time
+from io import StringIO
+
+from urllib.parse import urlparse
+from urllib.parse import parse_qsl
+urlparse.parse_qsl = parse_qsl
+
+from urllib.request import urlopen
+
 
 params = dict(urlparse.parse_qsl(sys.argv[2].replace('?',''))) if len(sys.argv) > 1 else dict()
 
@@ -30,7 +38,7 @@ class seasons:
         self.seasons_posters = '0'
         self.episodeLibrary = []
         self.lang = control.apiLanguage()['tvdb']
-		
+        
         myTimeDelta = 0
         myTimeZone = control.setting('setting.timezone')
         myTimeDelta = int(re.sub('[^0-9]', '', str(myTimeZone)))
@@ -42,7 +50,7 @@ class seasons:
         if self.tvdb_key == '' or self.tvdb_key == '0' or self.tvdb_key == None: self.tvdb_key = '69F2FCC839393569'
         self.fanart_tv_user = control.setting('fanart.tv.user')
         self.fanart_tv_art_link = 'http://webservice.fanart.tv/v3/tv/%s'
- 		
+         
         
         self.tvdb_info_link = 'http://thetvdb.com/api/%s/series/%s/all/%s.zip' % (self.tvdb_key, '%s', '%s')
         self.tvdb_by_imdb = 'http://thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s'
@@ -50,26 +58,26 @@ class seasons:
         self.tvdb_image = 'http://thetvdb.com/banners/'
         self.tvdb_poster = 'http://thetvdb.com/banners/_cache/'
 
-		
-		########### TVDB API 2 #######################		
+        
+        ########### TVDB API 2 #######################        
         self.tvdb2_api = 'https://api.thetvdb.com'
         self.tvdb2_info_series = 'https://api.thetvdb.com/series/%s'
-        self.tvdb2_series_poster = 'https://api.thetvdb.com/series/%s/images/query?keyType=poster'	% ('%s')
-        self.tvdb2_series_fanart = 'https://api.thetvdb.com/series/%s/images/query?keyType=fanart'	% ('%s')
-        self.tvdb2_series_banner = 'https://api.thetvdb.com/series/%s/images/query?keyType=series'	% ('%s')
-        self.tvdb2_series_season = 'https://api.thetvdb.com/series/%s/images/query?keyType=season'	% ('%s')
-        self.tvdb2_series_bannerseason = 'https://api.thetvdb.com/series/%s/images/query?keyType=seasonwide'	% ('%s')
+        self.tvdb2_series_poster = 'https://api.thetvdb.com/series/%s/images/query?keyType=poster'    % ('%s')
+        self.tvdb2_series_fanart = 'https://api.thetvdb.com/series/%s/images/query?keyType=fanart'    % ('%s')
+        self.tvdb2_series_banner = 'https://api.thetvdb.com/series/%s/images/query?keyType=series'    % ('%s')
+        self.tvdb2_series_season = 'https://api.thetvdb.com/series/%s/images/query?keyType=season'    % ('%s')
+        self.tvdb2_series_bannerseason = 'https://api.thetvdb.com/series/%s/images/query?keyType=seasonwide'    % ('%s')
         self.tvdb2_by_imdb = 'https://api.thetvdb.com/search/series?imdbId=%s'
         self.tvdb2_by_query = 'https://api.thetvdb.com/search/series?name=%s'
-        self.tvdb2_series_actors = 'https://api.thetvdb.com/series/%s/actors'	% ('%s')		
-        self.tvdb2_episodes = 'https://api.thetvdb.com/series/%s/episodes'	% ('%s')	
+        self.tvdb2_series_actors = 'https://api.thetvdb.com/series/%s/actors'    % ('%s')        
+        self.tvdb2_episodes = 'https://api.thetvdb.com/series/%s/episodes'    % ('%s')    
         self.tvdb2_get_episode = 'https://api.thetvdb.com/episodes/%s'
 
-		
-		
-				
-		
-		
+        
+        
+                
+        
+        
 
     def get(self, tvshowtitle, year, imdb, tvdb, idx=True, create_directory=True):
         if control.window.getProperty('PseudoTVRunning') == 'True':
@@ -99,15 +107,15 @@ class seasons:
                     imdb = '0'
 
             if tvdb == '0' and not imdb == '0':
-				
-				u = self.tvdb2_by_imdb % imdb
-				result = tvdbapi.getTvdb(u)
-				item = json.loads(result)
-				item = item['data']
-				try:	tvdb = re.findall('''['"]id['"]:\s*(\d+)''', str(item))[0]
-				except: tvdb = ''
-				if tvdb == '': tvdb = '0'
-				tvdb = tvdb.encode('utf-8')
+                
+                u = self.tvdb2_by_imdb % imdb
+                result = tvdbapi.getTvdb(u)
+                item = json.loads(result)
+                item = item['data']
+                try:    tvdb = re.findall('''['"]id['"]:\s*(\d+)''', str(item))[0]
+                except: tvdb = ''
+                if tvdb == '': tvdb = '0'
+                tvdb = tvdb.encode('utf-8')
 
             if tvdb == '0':
                 url = self.tvdb2_by_query % (urllib.quote_plus(self.list[i]['title']))
@@ -118,7 +126,7 @@ class seasons:
                 tvdb = [(x, x['seriesName'], x['firstAired']) for x in item]
                 tvdb = [(x, x[1][0], x[2][0]) for x in tvdb if cleantitle.get(self.list[i]['title']) == cleantitle.get(x[1]) and any(y in x[2] for y in years)]
                 tvdb = [x[0] for x in tvdb][0]
-                try:	tvdb = re.findall('''['"]id['"]:\s*(\d+)''', str(tvdb))[0]
+                try:    tvdb = re.findall('''['"]id['"]:\s*(\d+)''', str(tvdb))[0]
                 except: tvdb = ''
                 if tvdb == '': tvdb = '0'
                 
@@ -132,12 +140,12 @@ class seasons:
             # ################ SERIES META ###############################
 
             s_url = self.tvdb2_info_series % tvdb
-            api = tvdbapi.getTvdb(s_url)		
-			
-				
+            api = tvdbapi.getTvdb(s_url)        
+            
+                
             api = json.loads(api)
             api = api['data']
-			
+            
             label = tvshowtitle
             year = year
             tvdb = tvdb
@@ -146,7 +154,7 @@ class seasons:
 
             banner = '0'
             cast = '0'
-			
+            
             self.poster = '0'
             self.fanart = '0'
             self.seasons_posters = '0'
@@ -156,19 +164,19 @@ class seasons:
 
             getmeta.append(libThread.Thread(self.threadPoster,tvdb))
             getmeta.append(libThread.Thread(self.threadFanart,tvdb))
-            getmeta.append(libThread.Thread(self.threadSeasons,tvdb))			
-            [i.start() for i in getmeta]	
-            [i.join() for i in getmeta]	
+            getmeta.append(libThread.Thread(self.threadSeasons,tvdb))            
+            [i.start() for i in getmeta]    
+            [i.join() for i in getmeta]    
             for i in range(0,30):
-				try:
-					time.sleep(0.5)
-					is_alive = [x for x in getmeta if x.is_alive() == True]
-					if not is_alive: break
-				except:
-					pass
+                try:
+                    time.sleep(0.5)
+                    is_alive = [x for x in getmeta if x.is_alive() == True]
+                    if not is_alive: break
+                except:
+                    pass
             poster = self.poster
             fanart = self.fanart
-	
+    
             try: premiered = api['firstAired'].encode('utf-8')
             except: premiered = '0'
             if premiered == '': premiered = '0'
@@ -189,13 +197,13 @@ class seasons:
             genre = client.replaceHTMLCodes(genre)
             genre = genre.encode('utf-8')
 
-			
+            
             try: duration = api['runtime']
             except: duration = ''
             if duration == '': duration = '0'
             duration = client.replaceHTMLCodes(duration)
-            duration = duration.encode('utf-8')			
-            # print ("TVDB EPISODES duration", duration)	
+            duration = duration.encode('utf-8')            
+            # print ("TVDB EPISODES duration", duration)    
 
             try: status = api['status']
             except: status = ''
@@ -213,8 +221,8 @@ class seasons:
             try: votes = api.get('siteRatingCount')
             except: votes = ''
             if votes == '' or votes == None: votes = '0'
-				# print ("TVDB votes", votes)
-				
+                # print ("TVDB votes", votes)
+                
             try: mpaa = api['rating']
             except: mpaa = ''
             if mpaa == '': mpaa = '0'
@@ -222,89 +230,89 @@ class seasons:
             mpaa = mpaa.encode('utf-8')
 
             cast = '0'
-			
+            
             try: plot = api['overview']
             except: plot = '0'
             if plot == '': plot = '0'
             plot = client.replaceHTMLCodes(plot)
             plot = plot.encode('utf-8')
-		
+        
             episodes = []
-		
+        
             if limit == '':
-				tvdb_Api = self.tvdb2_episodes % tvdb		
-				result2 = tvdbapi.getTvdb(tvdb_Api)
-				tvdb_req = json.loads(result2)
-				tvdb_data = tvdb_req['data']
-			
-				lastPage = tvdb_req['links']['last']
-				if int(lastPage) > 1:
-					for i in range(1, int(lastPage)+1):
-						if i != 1: 
-							nextPage = "?page=%s" % i
-							nextPage = tvdb_Api + nextPage
-							json_tvdb = tvdbapi.getTvdb(nextPage)
-							tvdb_req  = json.loads(json_tvdb)
-							tvdb_data += tvdb_req['data']
-							
-				seasons = [i for i in tvdb_data if str(i['airedEpisodeNumber']) == '1' and not str(i['airedSeason']) == '0']
-				seasons = sorted(seasons, key = lambda x : x['airedSeason'])
-			
+                tvdb_Api = self.tvdb2_episodes % tvdb        
+                result2 = tvdbapi.getTvdb(tvdb_Api)
+                tvdb_req = json.loads(result2)
+                tvdb_data = tvdb_req['data']
+            
+                lastPage = tvdb_req['links']['last']
+                if int(lastPage) > 1:
+                    for i in range(1, int(lastPage)+1):
+                        if i != 1: 
+                            nextPage = "?page=%s" % i
+                            nextPage = tvdb_Api + nextPage
+                            json_tvdb = tvdbapi.getTvdb(nextPage)
+                            tvdb_req  = json.loads(json_tvdb)
+                            tvdb_data += tvdb_req['data']
+                            
+                seasons = [i for i in tvdb_data if str(i['airedEpisodeNumber']) == '1' and not str(i['airedSeason']) == '0']
+                seasons = sorted(seasons, key = lambda x : x['airedSeason'])
+            
 
-            threadSeason = []		
+            threadSeason = []        
             seasonList = []
             if limit == '':  episodes = []
             else:
-				if limit == 'nextepisode':
-					tvdb_Api = self.tvdb2_episodes % tvdb
-					nextSeason = int(season) + 1
-					nextEpisode = int(episode) + 1				
-					epquery  = '/query?airedSeason=%s&airedEpisode=%s' % (str(season), str(nextEpisode))
-					epquery2 = '/query?airedSeason=%s&airedEpisode=%s' % (str(nextSeason), '1')
-					
-					try: 
-						json_tvdb    = tvdbapi.getTvdb(tvdb_Api + epquery)
-						tvdb_data      = json.loads(json_tvdb)
-						tvdb_data      = tvdb_data['data']					
-						seasonList = [i for i in tvdb_data if str(i['airedEpisodeNumber']) == str(nextEpisode) and str(i['airedSeason']) == str(season)]
-					except: pass
-					
-					try: 
-						if int(len(seasonList)) > 0: raise Exception()
-						json_tvdb    = tvdbapi.getTvdb(tvdb_Api + epquery2)
-						tvdb_data      = json.loads(json_tvdb)
-						tvdb_data      = tvdb_data['data']		
-						seasonList += [i for i in tvdb_data if str(i['airedEpisodeNumber']) == '1' and str(i['airedSeason']) == str(nextSeason)]
-					except: pass
-					episodes = 	seasonList	
-					seasons = []
-				
-				else:
-					tvdb_Api = "https://api.thetvdb.com/series/%s/episodes/query?airedSeason=%s" % (tvdb, str(limit))
-					json_tvdb = tvdbapi.getTvdb(tvdb_Api)
-					tvdb_req = json.loads(json_tvdb)
-					lastPage = tvdb_req['links']['last']
-					tvdb_data = tvdb_req['data']
+                if limit == 'nextepisode':
+                    tvdb_Api = self.tvdb2_episodes % tvdb
+                    nextSeason = int(season) + 1
+                    nextEpisode = int(episode) + 1                
+                    epquery  = '/query?airedSeason=%s&airedEpisode=%s' % (str(season), str(nextEpisode))
+                    epquery2 = '/query?airedSeason=%s&airedEpisode=%s' % (str(nextSeason), '1')
+                    
+                    try: 
+                        json_tvdb    = tvdbapi.getTvdb(tvdb_Api + epquery)
+                        tvdb_data      = json.loads(json_tvdb)
+                        tvdb_data      = tvdb_data['data']                    
+                        seasonList = [i for i in tvdb_data if str(i['airedEpisodeNumber']) == str(nextEpisode) and str(i['airedSeason']) == str(season)]
+                    except: pass
+                    
+                    try: 
+                        if int(len(seasonList)) > 0: raise Exception()
+                        json_tvdb    = tvdbapi.getTvdb(tvdb_Api + epquery2)
+                        tvdb_data      = json.loads(json_tvdb)
+                        tvdb_data      = tvdb_data['data']        
+                        seasonList += [i for i in tvdb_data if str(i['airedEpisodeNumber']) == '1' and str(i['airedSeason']) == str(nextSeason)]
+                    except: pass
+                    episodes =     seasonList    
+                    seasons = []
+                
+                else:
+                    tvdb_Api = "https://api.thetvdb.com/series/%s/episodes/query?airedSeason=%s" % (tvdb, str(limit))
+                    json_tvdb = tvdbapi.getTvdb(tvdb_Api)
+                    tvdb_req = json.loads(json_tvdb)
+                    lastPage = tvdb_req['links']['last']
+                    tvdb_data = tvdb_req['data']
 
-					if int(lastPage) > 1:
-						for i in range(1, int(lastPage)+1):
-							if i != 1: 
-								nextPage = "?page=%s" % i
-								nextPage = tvdb_Api + nextPage
-								json_tvdb = tvdbapi.getTvdb(nextPage)
-								tvdb_req  = json.loads(json_tvdb)
-								tvdb_data += tvdb_req['data']	
-								
-					episodes = sorted(tvdb_data, key = lambda x : int(x['airedEpisodeNumber']))	
-					seasons = []
-				
+                    if int(lastPage) > 1:
+                        for i in range(1, int(lastPage)+1):
+                            if i != 1: 
+                                nextPage = "?page=%s" % i
+                                nextPage = tvdb_Api + nextPage
+                                json_tvdb = tvdbapi.getTvdb(nextPage)
+                                tvdb_req  = json.loads(json_tvdb)
+                                tvdb_data += tvdb_req['data']    
+                                
+                    episodes = sorted(tvdb_data, key = lambda x : int(x['airedEpisodeNumber']))    
+                    seasons = []
+                
         except:
             pass
-	
-			
+    
+            
         if limit == '':
-			try: seasons_posters = self.seasons_posters
-			except: seasons_posters = '0'
+            try: seasons_posters = self.seasons_posters
+            except: seasons_posters = '0'
         for item in seasons:
 
             try:
@@ -320,15 +328,15 @@ class seasons:
                 if season == '0': continue
 
                 if not seasons_posters == '0':
-					
-					for thumbs, sid in seasons_posters:
-						if sid.encode('utf-8') == season:
-							thumb = thumbs.encode('utf-8')
-							thumb = self.tvdb_image + thumb
-							
+                    
+                    for thumbs, sid in seasons_posters:
+                        if sid.encode('utf-8') == season:
+                            thumb = thumbs.encode('utf-8')
+                            thumb = self.tvdb_image + thumb
+                            
                 else: thumb = poster
-			
-                if thumb == '0' or thumb == '' or thumb == None: thumb = poster			
+            
+                if thumb == '0' or thumb == '' or thumb == None: thumb = poster            
 
                 self.list.append({'season': season, 'tvshowtitle': tvshowtitle, 'label': label, 'year': year, 'premiered': premiered, 'status': status, 'studio': studio, 'genre': genre, 'duration': duration, 'rating': rating, 'votes': votes, 'mpaa': mpaa, 'cast': '0', 'plot': plot, 'imdb': imdb, 'tvdb': tvdb, 'poster': poster, 'banner': banner, 'fanart': fanart, 'thumb': thumb})
             except:
@@ -338,7 +346,7 @@ class seasons:
         episodelist = []
 
         for item in episodes:
-			
+            
             try:
                 id = item.get('id')
                 id = str(id)
@@ -354,37 +362,37 @@ class seasons:
                 episodelist.append(id)
 
                 try:title = item['episodeName'].encode('utf-8')
-                except: title = '0'	
+                except: title = '0'    
 
                 try:premiered = item['firstAired'].encode('utf-8')
-                except: premiered = '0'			
-				
+                except: premiered = '0'            
+                
                 if limit == 'nextepisode':
-					if int(re.sub('[^0-9]', '', str(premiered))) > int(re.sub('[^0-9]', '', str(self.today_date))): continue  
-					
+                    if int(re.sub('[^0-9]', '', str(premiered))) > int(re.sub('[^0-9]', '', str(self.today_date))): continue  
+                    
                 self.list.append({'id': id, 'epnumber' : epnumber, 'title': title,'label': title, 'season': season, 'episode': epnumber, 'tvshowtitle': tvshowtitle, 'year': year, 'premiered': premiered, 'status': status, 'studio': studio, 'genre': genre, 'duration': duration, 'rating': rating, 'votes': votes, 'mpaa': mpaa, 'director': '0', 'writer': '0', 'cast': '0', 'plot': plot, 'imdb': imdb, 'tvdb': tvdb, 'poster': poster, 'banner': '0', 'fanart': fanart, 'thumb': fanart})
 
                 # self.list.append({'title': title, 'label': label, 'season': season, 'episode': episode, 'tvshowtitle': tvshowtitle, 'year': year, 'premiered': premiered, 'status': status, 'studio': studio, 'genre': genre, 'duration': duration, 'rating': rating, 'votes': votes, 'mpaa': mpaa, 'director': director, 'writer': writer, 'cast': cast, 'plot': episodeplot, 'imdb': imdb, 'tvdb': tvdb, 'poster': poster, 'banner': banner, 'fanart': fanart, 'thumb': thumb})
             except:
                 pass
-				
-				
-				
+                
+                
+                
         try:
-			total = len(episodelist)
-			if int(total) > 0: 
-				for r in range(0, total, 40):
-					threads = []
-					for i in range(r, r+40):
-						if i <= total: threads.append(libThread.Thread(self.super_info, i))
-					[i.start() for i in threads]
-					[i.join() for i in threads]	
-        except: pass				
+            total = len(episodelist)
+            if int(total) > 0: 
+                for r in range(0, total, 40):
+                    threads = []
+                    for i in range(r, r+40):
+                        if i <= total: threads.append(libThread.Thread(self.super_info, i))
+                    [i.start() for i in threads]
+                    [i.join() for i in threads]    
+        except: pass                
         # print ("premiumizer FINAL LISTS", self.list)
         return self.list
-		
+        
 
-		
+        
     def tvdbLibrary(self, tvshowtitle, year, imdb, tvdb, lang, limit=''):
 
         try:
@@ -400,15 +408,15 @@ class seasons:
                     imdb = '0'
 
             if tvdb == '0' and not imdb == '0':
-				
-				u = self.tvdb2_by_imdb % imdb
-				result = tvdbapi.getTvdb(u)
-				item = json.loads(result)
-				item = item['data']
-				try:	tvdb = re.findall('''['"]id['"]:\s*(\d+)''', str(item))[0]
-				except: tvdb = ''
-				if tvdb == '': tvdb = '0'
-				tvdb = tvdb.encode('utf-8')
+                
+                u = self.tvdb2_by_imdb % imdb
+                result = tvdbapi.getTvdb(u)
+                item = json.loads(result)
+                item = item['data']
+                try:    tvdb = re.findall('''['"]id['"]:\s*(\d+)''', str(item))[0]
+                except: tvdb = ''
+                if tvdb == '': tvdb = '0'
+                tvdb = tvdb.encode('utf-8')
 
             if tvdb == '0':
                 url = self.tvdb2_by_query % (urllib.quote_plus(self.list[i]['title']))
@@ -419,7 +427,7 @@ class seasons:
                 tvdb = [(x, x['seriesName'], x['firstAired']) for x in item]
                 tvdb = [(x, x[1][0], x[2][0]) for x in tvdb if cleantitle.get(self.list[i]['title']) == cleantitle.get(x[1]) and any(y in x[2] for y in years)]
                 tvdb = [x[0] for x in tvdb][0]
-                try:	tvdb = re.findall('''['"]id['"]:\s*(\d+)''', str(tvdb))[0]
+                try:    tvdb = re.findall('''['"]id['"]:\s*(\d+)''', str(tvdb))[0]
                 except: tvdb = ''
                 if tvdb == '': tvdb = '0'
                 
@@ -437,34 +445,34 @@ class seasons:
             tvdb = tvdb
             imdb = imdb
 
-            tvdbApi = self.tvdb2_episodes % tvdb		
+            tvdbApi = self.tvdb2_episodes % tvdb        
             result2 = tvdbapi.getTvdb(tvdbApi)
             tvdbApi = json.loads(result2)
             tvdbApi = tvdbApi['data']
-				
-		
+                
+        
             episodes = []
             seasons = [i for i in tvdbApi if str(i['airedEpisodeNumber']) == '1' and not str(i['airedSeason']) == '0']
             seasons = sorted(seasons, key = lambda x : x['airedSeason'])
-			
-            # episodes = [i for i in tvdbApi]			
+            
+            # episodes = [i for i in tvdbApi]            
             # episodes = sorted(episodes, key = lambda x : x['airedSeason'])
-            threadSeason = []		
+            threadSeason = []        
 
             
             for item in seasons:
-				try:
-						season = item.get('airedSeason')
-						season = str(season)
-						season = season.encode('utf-8')
-						if season == '0': continue
-						url = "https://api.thetvdb.com/series/%s/episodes/query?airedSeason=%s" % (tvdb, str(season))
-						threadSeason.append(libThread.Thread(self.threadEpisodes, url))	
-				except:
-						pass
-                					
+                try:
+                        season = item.get('airedSeason')
+                        season = str(season)
+                        season = season.encode('utf-8')
+                        if season == '0': continue
+                        url = "https://api.thetvdb.com/series/%s/episodes/query?airedSeason=%s" % (tvdb, str(season))
+                        threadSeason.append(libThread.Thread(self.threadEpisodes, url))    
+                except:
+                        pass
+                                    
             [i.start() for i in threadSeason]
-            [i.join() for i in threadSeason]							
+            [i.join() for i in threadSeason]                            
             episodes = []
             seasons = []
 
@@ -472,16 +480,16 @@ class seasons:
 
         except:
             pass
-	
-			
+    
+            
 
         for item in self.episodeLibrary:
-			
+            
             try:
                 id = item.get('id')
                 id = str(id)
                 id = id.encode('utf-8')
-				
+                
                 epnumber = item.get('airedEpisodeNumber')
                 epnumber = str(epnumber)
                 epnumber = epnumber.encode('utf-8')
@@ -491,14 +499,14 @@ class seasons:
                 season = season.encode('utf-8')
 
                 try:title = item['episodeName'].encode('utf-8')
-                except: title = '0'	
+                except: title = '0'    
 
                 try:premiered = item['firstAired'].encode('utf-8')
                 except: premiered = '0'
 
                 if int(re.sub('[^0-9]', '', str(premiered))) > int(re.sub('[^0-9]', '', str(self.today_date))): continue
-                if control.setting('library.nextday.episodes') == 'true':	
-					if int(re.sub('[^0-9]', '', str(premiered))) == int(re.sub('[^0-9]', '', str(self.today_date))): continue					
+                if control.setting('library.nextday.episodes') == 'true':    
+                    if int(re.sub('[^0-9]', '', str(premiered))) == int(re.sub('[^0-9]', '', str(self.today_date))): continue                    
                 self.list.append({'id': id, 'epnumber' : epnumber, 'title': title, 'label': label, 'season': season, 'episode': epnumber, 'tvshowtitle': tvshowtitle, 'year': year, 'premiered': premiered, 'status': '0', 'studio': '0', 'genre': '0', 'duration': '0', 'rating': '0', 'votes': '0', 'mpaa': '0', 'director': '0', 'writer': '0', 'cast': '0', 'plot': '0', 'imdb': imdb, 'tvdb': tvdb, 'poster': '0', 'banner': '0', 'fanart': '0', 'thumb': '0'})
 
                 # self.list.append({'title': title, 'label': label, 'season': season, 'episode': episode, 'tvshowtitle': tvshowtitle, 'year': year, 'premiered': premiered, 'status': status, 'studio': studio, 'genre': genre, 'duration': duration, 'rating': rating, 'votes': votes, 'mpaa': mpaa, 'director': director, 'writer': writer, 'cast': cast, 'plot': episodeplot, 'imdb': imdb, 'tvdb': tvdb, 'poster': poster, 'banner': banner, 'fanart': fanart, 'thumb': thumb})
@@ -506,57 +514,57 @@ class seasons:
                 pass
 
         return self.list
-				
-		
-		
-		
-		
+                
+        
+        
+        
+        
     def threadEpisodes(self, url):
         try:
-			r = tvdbapi.getTvdb(url)
-			r = json.loads(r)
-			r = r['data']
-			self.episodeLibrary += r
-			return self.episodeLibrary
-			
-			
-			
+            r = tvdbapi.getTvdb(url)
+            r = json.loads(r)
+            r = r['data']
+            self.episodeLibrary += r
+            return self.episodeLibrary
+            
+            
+            
         except:
             pass
-	
+    
 
     def threadPoster(self, tvdb):
         try:
-			
-			self.poster = tvdbapi.getPoster(tvdb)
-			# print ("premiumizer META POSTER", self.poster)
-			return self.poster
+            
+            self.poster = tvdbapi.getPoster(tvdb)
+            # print ("premiumizer META POSTER", self.poster)
+            return self.poster
 
         except:
             pass
-	
-	
+    
+    
     def threadFanart(self, tvdb):
         try:
-			self.fanart = tvdbapi.getFanart(tvdb)
-			return self.fanart
+            self.fanart = tvdbapi.getFanart(tvdb)
+            return self.fanart
         except:
             pass
-			
+            
     def threadSeasons(self, tvdb):
         try:
-			try:self.seasons_posters = tvdbapi.getSeasonsFull(tvdb)
-			except: self.seasons_posters = '0'
-			return self.seasons_posters
+            try:self.seasons_posters = tvdbapi.getSeasonsFull(tvdb)
+            except: self.seasons_posters = '0'
+            return self.seasons_posters
 
         except:
             pass
-	
+    
     def super_info(self, i):
         try:
             imdb = self.list[i]['imdb'] if 'imdb' in self.list[i] else '0'
             tvdb = self.list[i]['tvdb'] if 'tvdb' in self.list[i] else '0'
-			
+            
             id = self.list[i]['id'] if 'id' in self.list[i] else '0'
             epnumber = self.list[i]['epnumber'] if 'epnumber' in self.list[i] else '0'
             url = self.tvdb2_get_episode % id
@@ -567,59 +575,59 @@ class seasons:
             except: thumb = '0'
             if thumb == '': thumb = '0'
             if not thumb == '0': 
-				thumb = self.tvdb_image + thumb
-				self.list[i].update({'thumb': thumb})
-				
+                thumb = self.tvdb_image + thumb
+                self.list[i].update({'thumb': thumb})
+                
 
 
             try:title = item['episodeName'].encode('utf-8')
             except: title = '0'
             if title == '': title = '0'
             if not title == '0': 
-				self.list[i].update({'title': title})
-				self.list[i].update({'label': title})
-				
+                self.list[i].update({'title': title})
+                self.list[i].update({'label': title})
+                
             try:plot = item['overview'].encode('utf-8')
             except: plot = '0'
             if plot == '': plot = '0'
             if not plot == '0': 
-				self.list[i].update({'plot': plot})
-				
+                self.list[i].update({'plot': plot})
+                
             try:plot = item['overview'].encode('utf-8')
             except: plot = '0'
             if plot == '': plot = '0'
             if not plot == '0': 
-				self.list[i].update({'plot': plot})
+                self.list[i].update({'plot': plot})
 
 
             try:premiered = item['firstAired'].encode('utf-8')
             except: premiered = '0'
             if premiered == '': premiered = '0'
             if not premiered == '0': 
-				self.list[i].update({'premiered': premiered})
-			
+                self.list[i].update({'premiered': premiered})
+            
             try: rating = item.get('siteRating')
             except: rating = ''
             rating = str(rating)
             if rating == '': rating = '0'
             rating = rating.encode('utf-8')
             if not rating == '0': 
-				self.list[i].update({'rating': rating})
-						
+                self.list[i].update({'rating': rating})
+                        
 
             try: votes = item.get('siteRatingCount')
             except: votes = ''
             if votes == '' or votes == None: votes = '0'
             if not votes == '0': 
-				self.list[i].update({'votes': votes})
+                self.list[i].update({'votes': votes})
 
         except:
             pass
-				
-		
-		
-		
-		
+                
+        
+        
+        
+        
     def seasonDirectory(self, items):
         if items == None or len(items) == 0: control.idle() ; sys.exit()
 
@@ -673,26 +681,26 @@ class seasons:
                 except: pass
                 try: meta.update({'genre': cleangenre.lang(meta['genre'], self.lang)})
                 except: pass
-	
+    
                 try: meta.update({'tvshowtitle': i['label']})
                 except: pass
                 try: meta.update({'year': i['premiered']})
                 except: pass
-				
-				
+                
+                
 
 
                 sysmeta = urllib.quote_plus(json.dumps(meta))
                 url = '%s?action=episodes&tvshowtitle=%s&year=%s&imdb=%s&tvdb=%s&season=%s' % (sysaddon, systitle, year, imdb, tvdb, season)
 
-                cm = []				
+                cm = []                
                 try:
                     if season in indicators: 
-						cm.append((unwatchedMenu, 'RunPlugin(%s?action=tvPlaycount&name=%s&imdb=%s&tvdb=%s&season=%s&query=6)' % (sysaddon, systitle, imdb, tvdb, season)))
-						meta.update({'playcount': 1, 'overlay': 7})
+                        cm.append((unwatchedMenu, 'RunPlugin(%s?action=tvPlaycount&name=%s&imdb=%s&tvdb=%s&season=%s&query=6)' % (sysaddon, systitle, imdb, tvdb, season)))
+                        meta.update({'playcount': 1, 'overlay': 7})
                     else: 
-						cm.append((watchedMenu, 'RunPlugin(%s?action=tvPlaycount&name=%s&imdb=%s&tvdb=%s&season=%s&query=7)' % (sysaddon, systitle, imdb, tvdb, season)))
-						meta.update({'playcount': 0, 'overlay': 6})
+                        cm.append((watchedMenu, 'RunPlugin(%s?action=tvPlaycount&name=%s&imdb=%s&tvdb=%s&season=%s&query=7)' % (sysaddon, systitle, imdb, tvdb, season)))
+                        meta.update({'playcount': 0, 'overlay': 6})
                 except:
                     pass
 
@@ -753,13 +761,13 @@ class episodes:
         self.trakt_link = 'http://api.trakt.tv'
         self.tvmaze_link = 'http://api.tvmaze.com'
         self.tvdb_key = 'MUQ2MkYyRjkwMDMwQzQ0NA=='
-		
+        
         myTimeDelta = 0
         myTimeZone = control.setting('setting.timezone')
         myTimeDelta = int(re.sub('[^0-9]', '', str(myTimeZone)))
         if "+" in str(myTimeZone): self.datetime = datetime.datetime.utcnow() + datetime.timedelta(hours = int(myTimeDelta))
         else: self.datetime = datetime.datetime.utcnow() - datetime.timedelta(hours = int(myTimeDelta))
-		
+        
         self.systime = (self.datetime).strftime('%Y%m%d%H%M%S%f')
         self.today_date = (self.datetime).strftime('%Y-%m-%d')
         self.trakt_user = control.setting('trakt.user').strip()
@@ -781,7 +789,7 @@ class episodes:
         self.traktlikedlists_link = 'http://api.trakt.tv/users/likes/lists?limit=1000000'
         self.traktlist_link = 'http://api.trakt.tv/users/%s/lists/%s/items'
         self.traktOnDeck_link = 'http://api.trakt.tv/sync/playback/episodes?extended=full&limit=20'
-		
+        
     def getLibrary(self, tvshowtitle, year, imdb, tvdb, season=None, episode=None, meta=None, idx=True, create_directory=True):
         try:
 
@@ -1066,7 +1074,7 @@ class episodes:
                 tvdb = re.sub('[^0-9]', '', str(tvdb))
 
                 watched_at = item['last_watched_at']
-				
+                
                 items.append({'imdb': imdb, 'tvdb': tvdb, 'tvshowtitle': tvshowtitle, 'year': year, 'snum': season, 'enum': episode, 'last_watched_at': watched_at})
             except:
                 pass
@@ -1092,17 +1100,17 @@ class episodes:
                 item  = itemList
                 if not 'tvshowtitle' in item and len(item) < 1: raise Exception()
                 item['action'] = 'episodes'
-                item['last_watched_at'] = i['last_watched_at']			
+                item['last_watched_at'] = i['last_watched_at']            
                 self.list.append(item)
                 return
             except:
                 pass
-				    
+                    
             try:
                 tvdbList = cache.get(seasons().tvdb_list, 24, i['tvshowtitle'], i['year'], i['imdb'], i['tvdb'], self.lang, 'nextepisode', i['snum'],  i['enum'])
                 item = tvdbList[0]
                 item['action'] = 'episodes'
-                item['last_watched_at'] = i['last_watched_at']					
+                item['last_watched_at'] = i['last_watched_at']                    
                 self.list.append(item)
                 # print self.list
                 return
@@ -1111,23 +1119,23 @@ class episodes:
 
 
         items = items[:100]
-		
+        
         threads = []
         for i in items: threads.append(libThread.Thread(items_list, i))
         [i.start() for i in threads]
         [i.join() for i in threads]
 
-		
+        
         try: self.list = sorted(self.list, key=lambda x: x['last_watched_at'], reverse=True)
         except: pass
-		
+        
         if self.trakt_sortby == 1:
-			try: self.list = sorted(self.list, key=lambda k: k['premiered'], reverse=True)
-			except: pass
+            try: self.list = sorted(self.list, key=lambda k: k['premiered'], reverse=True)
+            except: pass
         elif self.trakt_sortby == 2: 
-			try: self.list = sorted(self.list, key=lambda k: utils.title_key(k['tvshowtitle']))
-			except: pass
-			
+            try: self.list = sorted(self.list, key=lambda k: utils.title_key(k['tvshowtitle']))
+            except: pass
+            
         return self.list
 
 
@@ -1145,7 +1153,7 @@ class episodes:
 
             try:
                 url = self.tvdb_info_link % (i['tvdb'], lang)
-                data = urllib2.urlopen(url, timeout=10).read()
+                data = urlopen(url, timeout=10).read()
 
                 zip = zipfile.ZipFile(StringIO.StringIO(data))
                 result = zip.read('%s.xml' % lang)
@@ -1303,7 +1311,7 @@ class episodes:
 
 
         items = items[:100]
-		
+        
         threads = []
         for i in items: threads.append(libThread.Thread(items_list, i))
         [i.start() for i in threads]
@@ -1311,7 +1319,7 @@ class episodes:
 
         try: self.list = sorted(self.list, key=lambda k: k['premiered'], reverse=True)
         except: pass
-			
+            
         return self.list
 
 
@@ -1447,9 +1455,9 @@ class episodes:
         itemlist = itemlist[::-1]
 
         return itemlist
-		
-		
-		
+        
+        
+        
     def inProgress(self):
         try:
             from resources.lib.modules import favourites
@@ -1465,7 +1473,7 @@ class episodes:
                 try: i['tvshowtitle'] = i['tvshowtitle']
                 except: pass
 
-				
+                
                 try: i['name'] = i['name'].encode('utf-8')
                 except: pass
                 if not 'premiered' in i: i['premiered'] = '0'
@@ -1476,17 +1484,17 @@ class episodes:
                 if not 'poster' in i: i['poster'] = '0'
                 if not 'banner' in i: i['banner'] = '0'
                 if not 'fanart' in i: i['fanart'] = '0'
-                if not 'season' in i: i['season'] = '0'				
-                if not 'episode' in i: i['episode'] = '0'				
-                if not 'original_year' in i: i['original_year'] = '0'				
+                if not 'season' in i: i['season'] = '0'                
+                if not 'episode' in i: i['episode'] = '0'                
+                if not 'original_year' in i: i['original_year'] = '0'                
 
             # self.worker()
             
             self.inProgressDir(self.list)
         except:
-            return			
-		
-		
+            return            
+        
+        
     def inProgressDir(self, items):
         if items == None or len(items) == 0: control.idle() ; sys.exit()
 
@@ -1541,7 +1549,7 @@ class episodes:
                     label = '%sx%02d . %s' % (i['season'], int(i['episode']), i['label'])
                 if multi == True:
                     label = '%s - %s' % (i['tvshowtitle'], label)
-					
+                    
                 season_check = i['premiered']
                 if int(re.sub('[^0-9]', '', str(season_check))) > int(re.sub('[^0-9]', '', str(self.today_date))): label = "[I][COLOR yellow]" + label + "[/COLOR][/I]"
 
@@ -1552,9 +1560,9 @@ class episodes:
                 syspremiered = urllib.quote_plus(i['premiered'])
 
                 bookmarkname = urllib.quote_plus(i['tvshowtitle'].lower())
-                bookmarkname = bookmarkname + urllib.quote_plus(' S%02dE%02d' % (int(i['season']), int(i['episode'])))				
+                bookmarkname = bookmarkname + urllib.quote_plus(' S%02dE%02d' % (int(i['season']), int(i['episode'])))                
                 bookmarkname = urllib.unquote_plus(self.bookmarkname)
-				
+                
                 meta = dict((k,v) for k, v in i.items() if not v == '0')
                 meta.update({'mediatype': 'episode'})
                 meta.update({'trailer': '%s?action=trailer&name=%s' % (sysaddon, systvshowtitle)})
@@ -1641,7 +1649,7 @@ class episodes:
                 item.setArt(art)
                 item.addContextMenuItems(cm)
                 item.setProperty('IsPlayable', isPlayable)
-				
+                
                 played = bookmarks.bookmarks().get(bookmarkname.lower())
                 item.setProperty('resumetime', played)
 
@@ -1658,8 +1666,8 @@ class episodes:
         control.directory(syshandle, cacheToDisc=True)
         views.setView('episodes', {'skin.estuary': 55, 'skin.confluence': 504})
 
-		
-		
+        
+        
 
 
     def episodeDirectory(self, items):
@@ -1716,7 +1724,7 @@ class episodes:
                     label = '%sx%02d . %s' % (i['season'], int(i['episode']), i['label'])
                 if multi == True:
                     label = '%s - %s' % (i['tvshowtitle'], label)
-					
+                    
                 season_check = i['premiered']
                 if int(re.sub('[^0-9]', '', str(season_check))) > int(re.sub('[^0-9]', '', str(self.today_date))): label = "[I][COLOR yellow]" + label + "[/COLOR][/I]"
 
@@ -1727,7 +1735,7 @@ class episodes:
                 syspremiered = urllib.quote_plus(i['premiered'])
 
                 bookmarkname = urllib.quote_plus(i['tvshowtitle'].lower())
-                bookmarkname = bookmarkname + urllib.quote_plus(' S%02dE%02d' % (int(i['season']), int(i['episode'])))				
+                bookmarkname = bookmarkname + urllib.quote_plus(' S%02dE%02d' % (int(i['season']), int(i['episode'])))                
                 bookmarkname = urllib.unquote_plus(bookmarkname)
 
                 meta = dict((k,v) for k, v in i.items() if not v == '0')
@@ -1779,10 +1787,10 @@ class episodes:
 
 
                 if isOld == True:
-				
+                
                     cm.append((control.lang2(19033).encode('utf-8'), 'Action(Info)'))
-					
-					
+                    
+                    
                 item = control.item(label=label)
 
                 art = {}

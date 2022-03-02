@@ -19,7 +19,7 @@
 
 
 import re,sys,json,time,xbmc
-import hashlib,urllib,os,zlib,base64,codecs,xmlrpclib
+import hashlib,urllib,os,zlib,base64,codecs#,xmlrpclib
 
 
 try: from sqlite3 import dbapi2 as database

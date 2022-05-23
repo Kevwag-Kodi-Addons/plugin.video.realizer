@@ -18,7 +18,7 @@
 '''
 
 
-import re, sys, json, time, xbmc
+import re, sys, json, time, xbmc, xbmcvfs
 import hashlib, os, zlib, base64, codecs, xmlrpclib
 
 from six.moves.urllib_parse import quote_plus, unquote_plus
@@ -664,7 +664,7 @@ class subtitles:
             content = base64.b64decode(content['data'][0]['data'])
             content = str(zlib.decompressobj(16+zlib.MAX_WBITS).decompress(content))
 
-            subtitle = xbmc.translatePath('special://temp/')
+            subtitle = xbmcvfs.translatePath('special://temp/')
             subtitle = os.path.join(subtitle, 'TemporarySubs.%s.srt' % lang)
 
             codepage = codePageDict.get(lang, '')

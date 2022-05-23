@@ -23,14 +23,14 @@ try:
 except:
     from pysqlite2 import dbapi2 as database
 
-import json,os,xbmc,xbmcaddon
+import json,os,xbmc,xbmcvfs,xbmcaddon
 
 from resources.lib.modules import control
 
 import six
 
 addonInfo = xbmcaddon.Addon().getAddonInfo
-dataPath = xbmc.translatePath(addonInfo('profile'))
+dataPath = xbmcvfs.translatePath(addonInfo('profile'))
 if six.PY2:
     dataPath = dataPath.decode('utf-8')
 favouritesFile = os.path.join(dataPath, 'favourites.db')

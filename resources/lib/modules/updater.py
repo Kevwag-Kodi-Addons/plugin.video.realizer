@@ -19,7 +19,7 @@
 '''
 
 
-import json, xbmc, xbmcgui, os, zipfile, xbmcaddon, re, sys
+import json, xbmc, xbmcvfs, xbmcgui, os, zipfile, xbmcaddon, re, sys
 import requests
 from resources.lib.modules import control, downloadzip, extract
 
@@ -30,7 +30,7 @@ addonInfo = xbmcaddon.Addon().getAddonInfo
 addonVersion = str(addonInfo('version'))
 dialog = xbmcgui.Dialog()
     
-realizerPath = xbmc.translatePath(os.path.join('special://home/userdata/realizer_updates',''))
+realizerPath = xbmcvfs.translatePath(os.path.join('special://home/userdata/realizer_updates',''))
 if not os.path.exists(realizerPath): os.makedirs(realizerPath)
   
 def updatelibrary():
@@ -46,7 +46,7 @@ def updatelibrary():
         # if str(timeNow) == str(refresh): raise Exception()
         # control.setSetting(id='library.refresh', value=timeNow)
         # try:
-            # libraryPath = xbmc.translatePath(control.setting('library.path'))
+            # libraryPath = xbmcvfs.translatePath(control.setting('library.path'))
             # if control.setting('library.deleteold') != 'true': raise Exception()
             # try: shutil.rmtree(libraryPath)
             # except:pass
@@ -79,7 +79,7 @@ def updatelibrary():
     
 def backupAddon():
     
-    profilePath = xbmc.translatePath(addonInfo('profile'))
+    profilePath = xbmcvfs.translatePath(addonInfo('profile'))
     if six.PY2:
         profilePath = profilePath.decode('utf-8')
 
@@ -87,8 +87,8 @@ def backupAddon():
     if os.path.exists(USERDATA):
         backupdir = control.setting('remote_path')
         if not backupdir == '':
-            to_backup = xbmc.translatePath('special://home/userdata/addon_data/')    
-            backup_zip = xbmc.translatePath(os.path.join(backupdir,'realizer_settings.zip'))
+            to_backup = xbmcvfs.translatePath('special://home/userdata/addon_data/')    
+            backup_zip = xbmcvfs.translatePath(os.path.join(backupdir,'realizer_settings.zip'))
             from lib_commons import CreateZip
             exclude_database = ['.txt']
             CreateZip(USERDATA, backup_zip, 'Creating Backup', 'Backing up files', '', exclude_database)                        
@@ -98,12 +98,12 @@ def backupAddon():
            xbmc.executebuiltin('RunPlugin(%s?action=openSettings&query=7.0)' % sys.argv[0])
         
 def restoreAddon():
-    profilePath = xbmc.translatePath(addonInfo('profile'))
+    profilePath = xbmcvfs.translatePath(addonInfo('profile'))
     if six.PY2:
         profilePath = profilePath.decode('utf-8')
 
     USERDATA     =  str(profilePath)
-    xmlSettings = xbmc.translatePath(os.path.join(profilePath, 'settings.xml'))
+    xmlSettings = xbmcvfs.translatePath(os.path.join(profilePath, 'settings.xml'))
     yesDialog = dialog.yesno('Restore From Zip File', 'This will overwrite all your current settings of the addon... Are you sure?', yeslabel='Yes', nolabel='No')
     if yesDialog:
         if os.path.exists(USERDATA):
